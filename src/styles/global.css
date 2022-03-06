@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'SF Pro Text';
+  src: url('../assets/fonts/sf-pro-text-regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  font-weight: 600;
+  src: url('../assets/fonts/sf-pro-text-semibold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'SF Pro Text';
+  font-weight: 700;
+  src: url('../assets/fonts/sf-pro-text-bold.ttf') format('truetype');
+}
+
+@import url('./reset.css');
+
+.main-bg {
+  background-image: url('../assets/images/png/background.png');
+  background-size: 839px 512px;
+}
