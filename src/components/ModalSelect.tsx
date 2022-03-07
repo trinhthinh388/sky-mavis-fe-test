@@ -9,6 +9,7 @@ export type ModalSelectProps = {
   value?: string | React.ReactElement;
   title?: string;
   children?: React.ReactNode;
+  onChange?: (selectedData: unknown) => any;
   renderValue: (
     selectedData: unknown
   ) => string | JSX.Element | React.ReactNode;
@@ -19,9 +20,14 @@ const SelectContainer = styled.div`
     background-color: white !important;
     cursor: pointer;
   }
+
+  .select-option:last-child {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
 `;
 
-const ModalBackdrop = styled.div`
+export const ModalBackdrop = styled.div`
   position: fixed;
   display: flex;
   align-items: center;
@@ -34,7 +40,7 @@ const ModalBackdrop = styled.div`
   z-index: 9999;
 `;
 
-const ModalContainer = styled.div`
+export const ModalContainer = styled.div`
   border-radius: 16px;
   background-color: white;
   width: 336px;
@@ -60,7 +66,7 @@ const ModalContainer = styled.div`
   }
 
   .modal-body {
-    min-height: 50vh;
+    min-height: 100px;
   }
 `;
 
@@ -76,9 +82,10 @@ export default function ModalSelect({
   value,
   title = '',
   children,
+  onChange = () => {},
   renderValue,
   ...props
-}: ModalSelectProps & InputProps) {
+}: ModalSelectProps & Omit<InputProps, 'onChange'>) {
   const [show, setShow] = useState<boolean>(false);
   const [selected, setSelected] = useState<unknown>(null);
 
@@ -110,6 +117,7 @@ export default function ModalSelect({
               {Children.map(children, (child) =>
                 React.cloneElement(child as any, {
                   onSelected: (data: unknown) => {
+                    onChange(data);
                     setSelected(data);
                     close();
                   },
@@ -137,7 +145,7 @@ function Option({
     onSelected(data);
   };
   return (
-    <SelectOption {...props} onClick={handleClick}>
+    <SelectOption className="select-option" {...props} onClick={handleClick}>
       {children}
     </SelectOption>
   );

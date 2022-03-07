@@ -4,9 +4,21 @@ import styled from 'styled-components';
 export type InputProps = {
   leftLabel?: string | React.ReactElement;
   rightLabel?: string | React.ReactElement;
+  errorMessage?: string;
 };
 
-const InputContainer = styled.div``;
+const InputContainer = styled.div`
+  .error-message {
+    padding-left: 10px;
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    letter-spacing: 0px;
+    margin-bottom: 4px;
+    color: red;
+  }
+`;
 
 const Label = styled(Text)`
   font-size: 10px;
@@ -35,6 +47,7 @@ const LabelContainer = styled.div`
 export default function Login({
   leftLabel,
   rightLabel,
+  errorMessage = '',
   ...props
 }: InputProps & TextInputProps) {
   return (
@@ -56,6 +69,7 @@ export default function Login({
         </LabelContainer>
       )}
       <TextInput color="primary" {...props} />
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
     </InputContainer>
   );
 }

@@ -1,11 +1,23 @@
-import { useContext, useEffect } from 'react';
-import { Box, ResponsiveContext, FormField, Button } from 'grommet';
+import { useContext, useEffect, useState } from 'react';
+import { Box, ResponsiveContext, FormField, Button, Spinner } from 'grommet';
 import Input from '../../components/Input';
-import ModalSelect from '../../components/ModalSelect';
-import styled from 'styled-components';
+import ModalSelect, {
+  ModalBackdrop,
+  ModalContainer,
+} from '../../components/ModalSelect';
 import { ReactComponent as ChevronLeft } from '../../assets/images/svg/chevron-left.svg';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import AssetCard from '../../components/AssetCard';
+import BigNumber from 'bignumber.js';
+import {
+  Header,
+  Address,
+  SelectedAsset,
+  MaxBtn,
+  ActionContainer,
+  SuccessMessage,
+} from './Send.styles';
 
 // Actions
 import { useDispatch } from 'react-redux';
@@ -14,110 +26,23 @@ import { getWalletInfo } from '../../redux/actions/auth';
 import { getBalance } from '../../redux/actions/asset';
 import { RootState } from '../../redux/store';
 import { WalletInfo } from '../../api/auth.api';
-import { Asset } from '../../api/asset.api';
-import AssetCard from '../../components/AssetCard';
-
-export const Header = styled.div`
-  padding: 18px 0;
-  box-shadow: 0px 4px 12px #f7f9fc;
-
-  .title {
-    flex: 1;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 20px;
-    letter-spacing: 0em;
-    text-align: center;
-    margin-right: 24px;
-  }
-
-  .back-btn {
-    cursor: pointer;
-    width: 24px;
-    height: 24px;
-    border-radius: 8xp;
-  }
-`;
-
-export const ActionContainer = styled.div`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  button {
-    max-width: 160px;
-    text-align: center;
-  }
-
-  button.secondary {
-    padding: 9px 20px;
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 600;
-    background-color: #f7f9fc;
-    border-radius: 8px;
-  }
-
-  button:first-child {
-    margin-right: 8px;
-  }
-  button:nth-child(2) {
-    margin-left: 8px;
-  }
-`;
-
-const Address = styled.div`
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 20px;
-  letter-spacing: 0px;
-  color: #8f9bb3;
-
-  span {
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
-    letter-spacing: 0px;
-    margin-left: 8px;
-  }
-`;
-
-const SelectedAsset = styled.div`
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 20px;
-  letter-spacing: 0em;
-  text-align: left;
-
-  .icon-container {
-    width: 24px;
-    height: 24px;
-    margin-right: 8px;
-
-    > img {
-      height: 100%;
-      max-width: 100%;
-    }
-  }
-`;
+import { Asset, DepositParams, deposit } from '../../api/asset.api';
 
 export default function Send() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const breakpoint = useContext(ResponsiveContext);
+  const [isLoading, setLoading] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
   const {
-    register,
+    clearErrors,
     handleSubmit,
+    control,
+    setValue,
+    setError,
     watch,
     formState: { errors },
-  } = useForm();
+  } = useForm<DepositParams>();
 
   const walletInfo = useSelector<RootState, WalletInfo | null>(
     (state) => state.authState.walletInfo
@@ -126,6 +51,13 @@ export default function Send() {
   const balance = useSelector<RootState, Asset[]>(
     (state) => state.assetState.currentBalance
   );
+
+  const onSubmit = async () => {
+    setLoading(true);
+    await deposit(watch());
+    setShowModal(true);
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (!walletInfo) {
@@ -137,6 +69,24 @@ export default function Send() {
 
   return (
     <Box fill background="white">
+      {showModal && (
+        <ModalBackdrop>
+          <ModalContainer>
+            <div className="modal-title">Successfully sent</div>
+            <div className="modal-body">
+              <SuccessMessage>
+                <span>
+                  Your <b>{watch('asset')}</b> has been sent! Thank you for
+                  using our service
+                </span>
+                <Button primary onClick={() => setShowModal(false)}>
+                  Ok
+                </Button>
+              </SuccessMessage>
+            </div>
+          </ModalContainer>
+        </ModalBackdrop>
+      )}
       <Header>
         <Box
           style={{
@@ -166,6 +116,7 @@ export default function Send() {
           padding: '25px 20px',
         }}
         fill={breakpoint === 'small'}
+        onSubmit={handleSubmit(onSubmit)}
       >
         <FormField className="fluid">
           <Input
@@ -181,57 +132,155 @@ export default function Send() {
           />
         </FormField>
 
-        <FormField className="fluid">
-          <Input leftLabel="TO" name="to" />
-        </FormField>
+        <Controller
+          control={control}
+          rules={{ required: true }}
+          name="to"
+          render={({ field: { value } }) => (
+            <FormField className="fluid">
+              <Input
+                leftLabel="TO"
+                value={value ?? ''}
+                onChange={(e) => {
+                  e.preventDefault();
+                  const { value } = e.target;
+                  setValue('to', value);
+                }}
+              />
+            </FormField>
+          )}
+        />
 
-        <FormField className="fluid">
-          <ModalSelect
-            title="Assets"
-            leftLabel="ASSET"
-            renderValue={(selected) => (
-              <>
-                {!selected && null}
-                {selected && (
-                  <SelectedAsset>
-                    <div className="icon-container">
-                      <img alt="icon" src={(selected as Asset).iconURL} />
-                    </div>
-                    {(selected as Asset).symbol}
-                  </SelectedAsset>
+        <Controller
+          control={control}
+          name="asset"
+          rules={{ required: true }}
+          render={() => (
+            <FormField className="fluid">
+              <ModalSelect
+                title="Assets"
+                leftLabel="ASSET"
+                onChange={(d) => {
+                  setValue('asset', (d as Asset).symbol);
+                  setValue('amount', '');
+                }}
+                renderValue={(selected) => (
+                  <>
+                    {!selected && null}
+                    {selected && (
+                      <SelectedAsset>
+                        <div className="icon-container">
+                          <img alt="icon" src={(selected as Asset).iconURL} />
+                        </div>
+                        {(selected as Asset).symbol}
+                      </SelectedAsset>
+                    )}
+                  </>
                 )}
-              </>
-            )}
-          >
-            {balance.map((b) => (
-              <ModalSelect.Option data={b} key={b.id}>
-                <AssetCard data={b} />
-              </ModalSelect.Option>
-            ))}
-          </ModalSelect>
-        </FormField>
+              >
+                {balance.map((b) => (
+                  <ModalSelect.Option data={b} key={b.id}>
+                    <AssetCard data={b} />
+                  </ModalSelect.Option>
+                ))}
+              </ModalSelect>
+            </FormField>
+          )}
+        />
 
-        <FormField className="fluid">
-          <Input
-            leftLabel="AMOUNT"
-            rightLabel="AVAILABLE: 50 EUR"
-            name="amount"
-          />
-        </FormField>
+        <Controller
+          control={control}
+          rules={{
+            min: 1,
+            max: balance.find((b) => b.symbol === watch('asset'))
+              ?.nativeBalance,
+          }}
+          name="amount"
+          render={({ field: { value } }) => (
+            <FormField className="fluid">
+              <Input
+                type="number"
+                disabled={!watch('asset')}
+                leftLabel="AMOUNT"
+                rightLabel={
+                  watch('asset')
+                    ? `AVAILABLE: ${
+                        balance.find((b) => b.symbol === watch('asset'))
+                          ?.nativeBalance
+                      } ${watch('asset')}`
+                    : ''
+                }
+                name="amount"
+                icon={
+                  <MaxBtn
+                    onClick={() =>
+                      setValue(
+                        'amount',
+                        balance.find((b) => b.symbol === watch('asset'))
+                          ?.nativeBalance ?? ''
+                      )
+                    }
+                  >
+                    Max
+                  </MaxBtn>
+                }
+                reverse
+                value={value ?? ''}
+                onChange={(e) => {
+                  e.preventDefault();
+                  const { value } = e.target;
+                  const n = new BigNumber(value);
+                  setValue('amount', value);
+                  if (
+                    n.comparedTo(
+                      new BigNumber(
+                        balance.find((b) => b.symbol === watch('asset'))
+                          ?.nativeBalance ?? 0
+                      )
+                    ) > 0 ||
+                    n.isLessThanOrEqualTo(new BigNumber(0))
+                  ) {
+                    setError('amount', {
+                      type: 'max',
+                      message: 'Not sufficient balance',
+                    });
+                  } else {
+                    clearErrors('amount');
+                  }
+                }}
+                errorMessage={errors.amount?.message}
+              />
+            </FormField>
+          )}
+        />
 
         <ActionContainer>
-          <Button
-            fill
-            onClick={() => navigate('/home')}
-            className="secondary"
-            color="brand"
-            secondary
-          >
-            Cancel
-          </Button>
-          <Button fill primary>
-            Send
-          </Button>
+          {isLoading && <Spinner />}
+          {!isLoading && (
+            <>
+              <Button
+                fill
+                onClick={() => navigate('/home')}
+                className="secondary"
+                color="brand"
+                secondary
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  Object.keys(errors).length > 0 ||
+                  !watch('amount') ||
+                  !watch('to')
+                }
+                fill
+                primary
+              >
+                Send
+              </Button>
+            </>
+          )}
         </ActionContainer>
       </Box>
     </Box>

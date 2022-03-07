@@ -7,6 +7,22 @@ export type Asset = {
   iconURL: string;
 };
 
+export type DepositParams = {
+  from: string;
+  to: string;
+  amount: string;
+  asset: string;
+};
+
+export const deposit: (data: DepositParams) => Promise<boolean> = (
+  data: DepositParams
+) =>
+  new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, 1000);
+  });
+
 export const fetchAssetBalance: () => Promise<Asset[]> = () =>
   new Promise((resolve) => {
     setTimeout(() => {
