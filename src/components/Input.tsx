@@ -22,6 +22,7 @@ const Label = styled(Text)`
 
   &.right {
     padding-right: 10px;
+    color: #151a30;
   }
 `;
 

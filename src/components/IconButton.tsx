@@ -1,4 +1,5 @@
 import { Button, ButtonProps } from 'grommet';
+import React from 'react';
 import styled from 'styled-components';
 
 export type IconButtonProps = {
@@ -33,7 +34,9 @@ const IconBtnContainer = styled.div`
 export default function IconButton({
   label,
   ...props
-}: IconButtonProps & Omit<ButtonProps, 'label'>) {
+}: IconButtonProps &
+  Omit<ButtonProps, 'label'> &
+  React.HTMLAttributes<HTMLButtonElement>) {
   return (
     <IconBtnContainer>
       <StyledButton {...props} />

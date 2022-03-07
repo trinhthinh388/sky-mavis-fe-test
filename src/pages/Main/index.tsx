@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react';
 import Header from '../../components/Header';
 import IconButton from '../../components/IconButton';
 import WalletCard from '../../components/WalletCard';
-import styled from 'styled-components';
+import { ActionContainer, AssetContainer } from './Main.styles';
 
 // SVGs
 import { ReactComponent as SendIcon } from '../../assets/images/svg/send.svg';
@@ -18,38 +18,10 @@ import { RootState } from '../../redux/store';
 import { WalletInfo } from '../../api/auth.api';
 import { Asset } from '../../api/asset.api';
 import AssetCard from '../../components/AssetCard';
-
-const ActionContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 28px;
-  margin-bottom: 17px;
-
-  div:nth-child(2) {
-    margin: 0 24px;
-  }
-`;
-
-const AssetContainer = styled.div`
-  > .title {
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 20px;
-    letter-spacing: 0px;
-    text-align: left;
-    padding-left: 12px;
-    margin-bottom: 12px;
-  }
-
-  .asset-card {
-    background-color: #f7f9fc;
-    margin-bottom: 8px;
-  }
-`;
+import { useNavigate } from 'react-router-dom';
 
 export default function Main() {
+  const navigate = useNavigate();
   const breakpoint = useContext(ResponsiveContext);
   const dispatch = useDispatch();
 
@@ -85,7 +57,11 @@ export default function Main() {
 
       <ActionContainer>
         <IconButton label="Deposit" disabled icon={<CreditCardIcon />} />
-        <IconButton label="Send" icon={<SendIcon />} />
+        <IconButton
+          onClick={() => navigate('/send')}
+          label="Send"
+          icon={<SendIcon />}
+        />
         <IconButton label="Swap" disabled icon={<ReloadIcon />} />
       </ActionContainer>
 

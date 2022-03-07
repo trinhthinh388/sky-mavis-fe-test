@@ -50,6 +50,18 @@ export const theme: ThemeType = {
         background: linear-gradient(256.28deg, #1C94F4 0%, #1273EA 100%);
       `,
     },
+    secondary: {
+      font: {
+        weight: 600,
+      },
+      padding: {
+        vertical: '9px',
+        horizontal: '20px',
+      },
+      extend: `
+        background-color: #F7F9FC;
+      `,
+    },
     border: {
       radius: '8px',
       width: '1px',
