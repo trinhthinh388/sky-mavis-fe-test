@@ -1,20 +1,44 @@
-import { useState, useContext } from 'react';
-import { Heading, Button, FormField, ResponsiveContext } from 'grommet';
+import { useState, useContext, useEffect } from 'react';
+import {
+  Heading,
+  Button,
+  FormField,
+  ResponsiveContext,
+  Spinner,
+} from 'grommet';
 import { ReactComponent as Logo } from '../../assets/images/svg/logo.svg';
 import Input from '../../components/Input';
 import { FormView, FormViewHide } from 'grommet-icons';
 import { Container, LogoSection, EyeIcon } from './Login.styles';
 import { useNavigate } from 'react-router-dom';
 
+// Actions
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../../redux/actions/auth';
+import { RootState } from '../../redux/store';
+import { AuthState } from '../../redux/reducers/auth';
+
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const breakpoint = useContext(ResponsiveContext);
+  const authState = useSelector<RootState, AuthState>(
+    (state) => state.authState
+  );
   const [showPw, setShowPw] = useState<boolean>(false);
 
   const toggleShow = () => setShowPw((prev) => !prev);
 
+  const onSubmit = () => dispatch(login(() => navigate('/home')));
+
+  useEffect(() => {
+    if (authState.isLoggedIn) {
+      navigate('/home');
+    }
+  }, [authState.isLoggedIn, navigate]);
+
   return (
-    <Container onSubmit={() => navigate('/home')}>
+    <Container onSubmit={onSubmit}>
       <FormField>
         <LogoSection>
           <Logo className="logo" />
@@ -38,7 +62,8 @@ export default function Login() {
         />
       </FormField>
 
-      <Button type="submit" primary label="Unlock" />
+      {authState.loading && <Spinner />}
+      {!authState.loading && <Button type="submit" primary label="Unlock" />}
     </Container>
   );
 }

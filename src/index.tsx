@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import { Grommet } from 'grommet';
 import { theme } from './config/theme';
+import store from './redux/store';
+import { Provider } from 'react-redux';
 import reportWebVitals from './reportWebVitals';
 
 // Styles
@@ -10,9 +12,11 @@ import './styles/global.css';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Grommet theme={theme}>
-      <App />
-    </Grommet>
+    <Provider store={store}>
+      <Grommet theme={theme}>
+        <App />
+      </Grommet>
+    </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );
