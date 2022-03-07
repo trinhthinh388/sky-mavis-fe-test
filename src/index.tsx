@@ -9,6 +9,7 @@ import reportWebVitals from './reportWebVitals';
 
 // Styles
 import './styles/global.css';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 ReactDOM.render(
   <React.StrictMode>

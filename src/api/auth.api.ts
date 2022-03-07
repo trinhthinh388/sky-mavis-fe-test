@@ -2,6 +2,7 @@ export type WalletInfo = {
   name: string;
   address: string;
   usdBalance: string;
+  vndBalance: string;
 };
 
 export const auth: () => Promise<boolean> = () =>
@@ -16,9 +17,10 @@ export const fetchWalletInfo: () => Promise<WalletInfo> = () =>
     setTimeout(() => {
       const wallet: WalletInfo = {
         name: 'My Wallet',
-        address: '(7300 3777 3888 3334)',
+        address: '7300 3777 3888 3334',
         usdBalance: '1000',
+        vndBalance: '23046000',
       };
       resolve(wallet);
-    }, 1000);
+    }, 2000);
   });
